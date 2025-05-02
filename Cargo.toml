@@ -1,0 +1,31 @@
+[package]
+name = "workingdb"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+blake3 = "1.8.2"
+cc = "1.2.20"
+crc32fast = "1.4.2"
+criterion = "0.5.1"
+crossbeam-epoch = "0.9.18"
+crossbeam-utils = "0.8.21"
+jemalloc-ctl = {version="0.5.4", features=["use_std"]}
+libc = "0.2.172"
+memmap2 = "0.9.5"
+nix = "0.30.0"
+pest = "2.8.0"
+pest_derive = "2.8.0"
+proptest = "1.6.0"
+rand = "0.9.1"
+tokio = { version = "1.44.2", features = ["full", "tracing"] }
+
+[profile.release]
+opt-level = 3        # Maximum optimizations
+debug = false        # Strip debug symbols
+lto = "fat"          # Link-time optimization across crates
+codegen-units = 1    # Maximize optimizations over compile time
+panic = "abort"      # No unwinding, smaller binaries
+strip = true         # Strip symbols
+overflow-checks = false  # Assume we know what we're doing
+

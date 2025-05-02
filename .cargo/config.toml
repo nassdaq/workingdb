@@ -1,0 +1,17 @@
+[build]
+rustflags = [
+  "-C", "target-cpu=native",      # USE ALL CPU FEATURES
+  "-C", "link-arg=-fuse-ld=lld",  # FASTER LINKER
+  "-Z", "tune-cpu=native",        # OPTIMIZE FOR EXACT SILICON
+]
+
+[unstable]
+mtime-on-use = true
+build-std = ["std", "panic_abort", "core"]
+codegen-backend = "cranelift"  # FASTER COMPILATION
+
+[target.'cfg(target_os = "linux")']
+rustflags = [
+  "-C", "link-arg=-Wl,--no-rosegment",  # PERFORMANCE HACK
+  "-C", "link-arg=-Wl,--build-id=none", # SMALLER BINARY
+]
