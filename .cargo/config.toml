@@ -8,7 +8,7 @@ rustflags = [
 [unstable]
 mtime-on-use = true
 build-std = ["std", "panic_abort", "core"]
-codegen-backend = "cranelift"  # FASTER COMPILATION
+
 
 [target.'cfg(target_os = "linux")']
 rustflags = [
