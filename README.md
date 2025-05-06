@@ -31,7 +31,7 @@ cargo build --release
 **Running WorkingDB**
 
 ```bash
-# Run with default settings (127.0.0.1:6379)
+# Run with default settings (127.0.0.1:7777)
 ./target/release/workingdb
 
 # Customize with environment variables
@@ -46,12 +46,12 @@ Connect to WorkingDB using existing Redis or Memcached clients - the server auto
 
 ```bash
 # Using redis-cli
-redis-cli -h 127.0.0.1 -p 6379 SET mykey "Hello WorkingDB"
-redis-cli -h 127.0.0.1 -p 6379 GET mykey
+redis-cli -h 127.0.0.1 -p 7777 SET mykey "Hello WorkingDB"
+redis-cli -h 127.0.0.1 -p 7777 GET mykey
 
 # From Python
 import redis
-r = redis.Redis(host='localhost', port=6379)
+r = redis.Redis(host='localhost', port=7777)
 r.set('mykey', 'Hello WorkingDB')
 value = r.get('mykey')
 print(value)  # b'Hello WorkingDB'
@@ -61,12 +61,12 @@ print(value)  # b'Hello WorkingDB'
 
 ```bash
 # Using memcached CLI
-echo -e "set mykey 0 0 11\r\nHello World\r\n" | nc localhost 6379
-echo -e "get mykey\r\n" | nc localhost 6379
+echo -e "set mykey 0 0 11\r\nHello World\r\n" | nc localhost 7777
+echo -e "get mykey\r\n" | nc localhost 7777
 
 # From Python
 import pymemcache
-client = pymemcache.Client(('localhost', 6379))
+client = pymemcache.Client(('localhost', 7777))
 client.set('mykey', 'Hello WorkingDB')
 value = client.get('mykey')
 print(value)  # b'Hello WorkingDB'
@@ -79,7 +79,7 @@ WorkingDB uses environment variables for configuration:
 | Variable | Description | Default |
 |----------|-------------|---------|
 | `WORKINGDB_HOST` | Host to bind to | `127.0.0.1` |
-| `WORKINGDB_PORT` | Port to listen on | `6379` |
+| `WORKINGDB_PORT` | Port to listen on | `7777` |
 | `WORKINGDB_DATA` | Data directory for persistence | `./data` |
 
 **📋 Supported Commands**
