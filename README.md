@@ -1,6 +1,6 @@
 **WorkingDB**
 
-> **High-performance multi-protocol database engine built in Rust**
+> **High-performance Toy multi-protocol database engine built in Rust**
 
 **🚀 What is WorkingDB?**
 
