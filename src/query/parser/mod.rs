@@ -1,4 +1,3 @@
-// src/query/parser/mod.rs - SQL → AST
 // SQL parsing infrastructure
 
 // In a real implementation, we'd use Pest grammar
@@ -128,7 +127,7 @@ pub enum Literal {
 
 /// Parse SQL query into AST
 pub fn parse_query(query: &str) -> Result<ParsedQuery, String> {
-    // This is a placeholder for a real parser
+    // this is a placeholder for a real parser
     // In a real implementation, we'd use Pest grammar
     
     // Extremely simplified parser for demonstration

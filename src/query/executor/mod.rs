@@ -1,10 +1,9 @@
-// src/query/executor/mod.rs - JIT-COMPILED EXECUTION
 // Query execution engine with runtime optimization
 
 use std::sync::Arc;
 
 use crate::core::state::GlobalState;
-use crate::query::parser::{ParsedQuery, Expr, Literal, WhereClause};
+use crate::query::parser::{ParsedQuery, Expr, Literal};
 use crate::query::{QueryResult, Value};
 
 /// Execution plan for a query

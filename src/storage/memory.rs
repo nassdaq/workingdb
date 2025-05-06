@@ -1,4 +1,3 @@
-// src/storage/memory.rs - IN-MEMORY STORAGE ENGINE - LOCK-FREE B-TREE
 use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
 use std::time::{Duration, Instant};
@@ -33,7 +32,28 @@ impl MemTable {
             
         Self::with_partitions(cpu_count)
     }
-    
+    pub fn recover_set(&self, key: &[u8], value: Vec<u8>, ttl: Option<Duration>) -> Result<(), String> {
+        let partition = self.get_partition_for_key(key);
+        let entry = Entry {
+            value,
+            expires_at: ttl.map(|d| Instant::now() + d)
+        };
+
+        partition.write()
+            .map_err(|e| format!("Lock error: {:?}", e))?
+            .insert(key.to_vec(), entry);
+        
+        Ok(())
+    }
+
+    /// Special delete for recovery that bypasses AOF logging
+    pub fn recover_delete(&self, key: &[u8]) -> Result<bool, String> {
+        let partition = self.get_partition_for_key(key);
+        Ok(partition.write()
+            .map_err(|e| format!("Lock error: {:?}", e))?
+            .remove(key)
+            .is_some())
+    }
     /// Create with specific partition count
     pub fn with_partitions(count: usize) -> Self {
         let partitions = (0..count)

@@ -1,4 +1,3 @@
-// src/core/state.rs - GLOBAL DATABASE STATE - LOCK-FREE ARCHITECTURE
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 use std::sync::atomic::{AtomicU64, Ordering};
@@ -37,10 +36,14 @@ struct Statistics {
 
 impl GlobalState {
     /// Create new global state with provided storage components
-    pub fn new(mem_table: Arc<MemTable>, aof: AppendOnlyFile) -> Self {
+    pub fn new(mem_table: Arc<MemTable>, mut aof: AppendOnlyFile) -> Self {
+        // Replay AOF entries into memtable before creating state
+        if let Err(e) = aof.replay_existing_entries(&mem_table) {
+            eprintln!("AOF replay error: {}", e);
+        }
+
         Self {
             mem_table,
-            // CRITICAL FIX: Wrap in Mutex for interior mutability
             aof: std::sync::Mutex::new(aof),
             stats: Statistics {
                 start_time: Instant::now(),

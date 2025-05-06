@@ -1,6 +1,3 @@
-// src/storage/gc.rs - EPOCH-BASED REAPER (NO-STW)
-// Lock-free garbage collection for memory management
-
 use std::sync::Arc;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::time::{Duration, Instant};

@@ -1,11 +1,7 @@
-// src/storage/disk.rs - DIRECT NVME ACCESS (O_DIRECT)
-// Raw device access for maximum I/O performance
-
 use std::fs::{File, OpenOptions};
 use std::io::{Read, Seek, SeekFrom, Write};
 use std::os::unix::fs::OpenOptionsExt;
 use std::path::Path;
-use std::os::fd::AsRawFd;
 // CRITICAL FIX: Added libc import instead of nix for simplified dependencies
 use libc::{O_DIRECT, O_DSYNC};
 

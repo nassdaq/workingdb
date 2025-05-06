@@ -1,6 +1,3 @@
-// WorkingDB - A database engine for the modern infrastructure era
-// MAIN PROGRAM ENTRY POINT - SYSTEM INITIALIZATION
-
 use std::path::PathBuf;
 use std::process::exit;
 use std::sync::Arc;
@@ -16,7 +13,13 @@ use workingdb::util::panic::init_panic_handler;
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Initialize custom panic handler
     init_panic_handler();
-    
+    println!("
+▗▖ ▗▖ ▗▄▖ ▗▄▄▖ ▗▖ ▗▖▗▄▄▄▖▗▖  ▗▖ ▗▄▄▖▗▄▄▄ ▗▄▄▖ 
+▐▌ ▐▌▐▌ ▐▌▐▌ ▐▌▐▌▗▞▘  █  ▐▛▚▖▐▌▐▌   ▐▌  █▐▌ ▐▌
+▐▌ ▐▌▐▌ ▐▌▐▛▀▚▖▐▛▚▖   █  ▐▌ ▝▜▌▐▌▝▜▌▐▌  █▐▛▀▚▖
+▐▙█▟▌▝▚▄▞▘▐▌ ▐▌▐▌ ▐▌▗▄█▄▖▐▌  ▐▌▝▚▄▞▘▐▙▄▄▀▐▙▄▞▘
+                                    
+    ");
     // SYSTEM HEADER - IDENTITY SIGNATURE
     println!("🔥 WorkingDB v0.1.0 - DATABASE INITIALIZATION SEQUENCE 🔥");
     
@@ -64,8 +67,8 @@ fn parse_args() -> Args {
     // Basic arg parsing - EXPAND LATER WITH CLAP
     let host = std::env::var("WORKINGDB_HOST").unwrap_or_else(|_| "127.0.0.1".to_string());
     let port = std::env::var("WORKINGDB_PORT")
-        .map(|p| p.parse::<u16>().unwrap_or(6379))
-        .unwrap_or(6379);
+        .map(|p| p.parse::<u16>().unwrap_or(7777))
+        .unwrap_or(7777);
     let data_path = std::env::var("WORKINGDB_DATA")
         .map(PathBuf::from)
         .unwrap_or_else(|_| PathBuf::from("./data"));

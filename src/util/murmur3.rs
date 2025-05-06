@@ -1,9 +1,8 @@
-// src/network/memcached.rs - BINARY PROTOCOL SHIM
 // Memcached protocol implementation for legacy compatibility
 
 use std::sync::Arc;
 use std::time::Duration;
-use tokio::io::{AsyncReadExt, AsyncWriteExt};
+use tokio::io::AsyncReadExt;
 
 use crate::core::state::GlobalState;
 use crate::network::tcp::{TcpConnection, ProtocolHandler};

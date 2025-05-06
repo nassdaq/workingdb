@@ -1,4 +1,3 @@
-// src/persistence/snapshot.rs - CONSISTENT MEMORY DUMPS
 // Point-in-time snapshots of database state for recovery and backup
 
 use std::fs::OpenOptions;

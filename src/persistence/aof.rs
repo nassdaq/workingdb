@@ -3,6 +3,7 @@ use std::io::{self, BufReader, BufWriter, Read, Seek, SeekFrom, Write};
 use std::path::{Path, PathBuf};
 use std::time::Duration;
 use crate::util::crc64::calculate_crc;
+use crate::storage::memory::MemTable;
 
 
 /// Command types for AOF entries
@@ -49,39 +50,30 @@ pub struct AppendOnlyFile {
 impl AppendOnlyFile {
   /// Create or open AOF file
   pub fn new<P: AsRef<Path>>(path: P) -> io::Result<Self> {
-      let path_buf = Self::resolve_aof_path(path)?;
-      
-      // Create directories if they don't exist
-      if let Some(parent) = path_buf.parent() {
-          std::fs::create_dir_all(parent)?;
-      }
-      
-      // Open file with append mode
-      let file = OpenOptions::new()
-          .read(true)
-          .write(true)
-          .create(true)
-          .open(&path_buf)?;
-      
-      // Get file size
-      let position = file.metadata()?.len();
-      
-      // Create buffered writer
-      let writer_file = file.try_clone()?;
-      let writer = BufWriter::new(writer_file);
-      
-      let mut aof = Self {
-          path: path_buf,
-          file,
-          writer,
-          position,
-          replay_count: 0,
-      };
-      
-      // Replay existing file for recovery
-      aof.replay_existing_entries()?;
-      
-      Ok(aof)
+    let path_buf = Self::resolve_aof_path(path)?;
+    
+    // Create directories if needed
+    if let Some(parent) = path_buf.parent() {
+        std::fs::create_dir_all(parent)?;
+    }
+
+    // Open or create file
+    let file = OpenOptions::new()
+        .read(true)
+        .write(true)
+        .create(true)
+        .open(&path_buf)?;
+
+    let position = file.metadata()?.len();
+    let writer = BufWriter::new(file.try_clone()?);
+
+    Ok(Self {
+        path: path_buf,
+        file,
+        writer,
+        position,
+        replay_count: 0,
+    })
   }
   
   /// Get count of records replayed during recovery
@@ -231,101 +223,91 @@ impl AppendOnlyFile {
   }
   
   /// Replay existing entries from file for recovery
-  fn replay_existing_entries(&mut self) -> io::Result<()> {
-      // If file is empty, nothing to replay
-      if self.position == 0 {
-          return Ok(());
-      }
-      
-      // Rewind to beginning
-      self.file.seek(SeekFrom::Start(0))?;
-      
-      // Create buffered reader
-      let mut reader = BufReader::new(&self.file);
-      let header_size = std::mem::size_of::<EntryHeader>();
-      
-      let mut position = 0;
-      let mut replay_count = 0;
-      
-      // Read and process each entry
-      while position < self.position {
-          // Read header
-          let mut header_buf = vec![0u8; header_size];
-          reader.read_exact(&mut header_buf)?;
-          
-          // Parse header
-          let header = unsafe {
-              std::ptr::read_unaligned(header_buf.as_ptr() as *const EntryHeader)
-          };
-          
-          // Validate entry size
-          if header.size < header_size as u32 {
-              return Err(io::Error::new(
-                  io::ErrorKind::InvalidData,
-                  "Invalid entry size"
-              ));
-          }
-          
-          // Read key and value
-          let key_size = header.key_size as usize;
-          let value_size = header.value_size as usize;
-          
-          let mut key = vec![0u8; key_size];
-          reader.read_exact(&mut key)?;
-          
-          let mut value = Vec::new();
-          if value_size > 0 {
-              value = vec![0u8; value_size];
-              reader.read_exact(&mut value)?;
-          }
-          
-          // Calculate and verify CRC
-          let mut data_for_crc = header_buf[8..].to_vec(); // Skip CRC field
-          data_for_crc.extend_from_slice(&key);
-          if !value.is_empty() {
-              data_for_crc.extend_from_slice(&value);
-          }
-          
-          let calculated_crc = calculate_crc(&data_for_crc);
-          if calculated_crc != header.crc {
-              eprintln!("CRC mismatch in AOF at position {}", position);
-              // In a production system, we might try to recover or truncate
-              break;
-          }
-          
-          // Process based on command type
-          match header.cmd_type {
-              x if x == CommandType::Set as u8 => {
-                  // In a real implementation, we'd apply this to the in-memory store
-                  // For now, just count it
-                  replay_count += 1;
-              },
-              x if x == CommandType::Delete as u8 => {
-                  // In a real implementation, we'd apply this to the in-memory store
-                  // For now, just count it
-                  replay_count += 1;
-              },
-              _ => {
-                  return Err(io::Error::new(
-                      io::ErrorKind::InvalidData,
-                      format!("Unknown command type: {}", header.cmd_type)
-                  ));
-              }
-          }
-          
-          // Move to next entry
-          position += header.size as u64;
-      }
-      
-      // Update replay count
-      self.replay_count = replay_count;
-      
-      // Seek to end for future appends
-      self.file.seek(SeekFrom::End(0))?;
-      
-      Ok(())
+  pub fn replay_existing_entries(&mut self, mem_table: &MemTable) -> io::Result<()> {
+    if self.position == 0 {
+        return Ok(());
+    }
+
+    let mut reader = BufReader::new(&self.file);
+    reader.seek(SeekFrom::Start(0))?;
+    
+    let header_size = std::mem::size_of::<EntryHeader>();
+    let mut position = 0;
+
+    while position < self.position {
+        // Read and parse header
+        let mut header_buf = [0u8; std::mem::size_of::<EntryHeader>()];
+        reader.read_exact(&mut header_buf)?;
+        let header: EntryHeader = unsafe { 
+            std::ptr::read_unaligned(header_buf.as_ptr() as *const EntryHeader)
+        };
+
+        // Validate entry
+        if header.size < header_size as u32 {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidData, 
+                "Corrupted AOF entry"
+            ));
+        }
+
+        // Read key and value
+        let mut key = vec![0u8; header.key_size as usize];
+        reader.read_exact(&mut key)?;
+        
+        let mut value = Vec::new();
+        if header.value_size > 0 {
+            value.resize(header.value_size as usize, 0);
+            reader.read_exact(&mut value)?;
+        }
+
+        // Verify CRC
+        let mut crc_data = Vec::with_capacity(header.size as usize);
+        crc_data.extend_from_slice(&header_buf[8..]);
+        crc_data.extend_from_slice(&key);
+        crc_data.extend_from_slice(&value);
+        
+        if calculate_crc(&crc_data) != header.crc {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidData,
+                format!("CRC mismatch at position {}", position)
+            ));
+        }
+
+        // Apply to MemTable
+        match header.cmd_type {
+            x if x == CommandType::Set as u8 => {
+                let ttl = Duration::from_millis(header.ttl_ms);
+                mem_table.recover_set(
+                    &key,
+                    value,
+                    if header.ttl_ms > 0 { Some(ttl) } else { None }
+                ).map_err(|e| io::Error::new(
+                    io::ErrorKind::InvalidData,
+                    format!("Replay failed: {}", e)
+                ))?;
+                self.replay_count += 1;
+            }
+            x if x == CommandType::Delete as u8 => {
+                mem_table.recover_delete(&key)
+                    .map_err(|e| io::Error::new(
+                        io::ErrorKind::InvalidData,
+                        format!("Replay failed: {}", e)
+                    ))?;
+                self.replay_count += 1;
+            }
+            _ => return Err(io::Error::new(
+                io::ErrorKind::InvalidData,
+                "Unknown command type"
+            ))
+        }
+
+        position += header.size as u64;
+    }
+
+    // Reset file position for new writes
+    self.file.seek(SeekFrom::End(0))?;
+    Ok(())
   }
-  
   /// Resolve AOF file path
   fn resolve_aof_path<P: AsRef<Path>>(path: P) -> io::Result<PathBuf> {
       let path_ref = path.as_ref();

@@ -1,4 +1,3 @@
-// src/network/tcp.rs - TOKIO + IO_URING NETWORK STACK
 use std::sync::Arc;
 use std::task::{Context, Poll};
 use std::pin::Pin;

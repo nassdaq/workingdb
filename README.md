@@ -1,110 +1,153 @@
-## 🔴 FOUR-WEEK NEURAL ACCELERATION BLUEPRINT 🔴
+**WorkingDB**
+
+> **High-performance multi-protocol database engine built in Rust**
+
+**🚀 What is WorkingDB?**
+
+WorkingDB is a blazing-fast, memory-optimized database that speaks multiple protocols (Redis, Memcached) so you can plug it into your existing stack without changing client code. Built on a zero-copy architecture with lock-free concurrency primitives, WorkingDB delivers microsecond-level latency while maintaining durability through its append-only file (AOF) persistence.
+
+**Key Features:**
+- 🔮 Multi-protocol support (Redis + Memcached compatibility)
+- ⚡ Lock-free memory architecture for concurrent operations
+- 💾 Automatic persistence with AOF journaling
+- 🧵 Tokio-powered async I/O
+- 🔄 Auto protocol detection
+- ⏱️ Built-in TTL support for expiring keys
+- 🧹 Background garbage collection
+
+**🛠️ Getting Started**
+
+**Installation**
+
+```bash
+# Clone the repo
+git clone https://github.com/yourusername/workingdb.git
+cd workingdb
+
+# Build with optimizations
+cargo build --release
+```
+
+**Running WorkingDB**
+
+```bash
+# Run with default settings (127.0.0.1:6379)
+./target/release/workingdb
+
+# Customize with environment variables
+WORKINGDB_HOST=0.0.0.0 WORKINGDB_PORT=6380 WORKINGDB_DATA=/path/to/data ./target/release/workingdb
+```
+
+**💻 Client Connections**
+
+Connect to WorkingDB using existing Redis or Memcached clients - the server auto-detects the protocol.
+
+**Redis Example**
+
+```bash
+# Using redis-cli
+redis-cli -h 127.0.0.1 -p 6379 SET mykey "Hello WorkingDB"
+redis-cli -h 127.0.0.1 -p 6379 GET mykey
+
+# From Python
+import redis
+r = redis.Redis(host='localhost', port=6379)
+r.set('mykey', 'Hello WorkingDB')
+value = r.get('mykey')
+print(value)  # b'Hello WorkingDB'
+```
+
+**Memcached Example**
+
+```bash
+# Using memcached CLI
+echo -e "set mykey 0 0 11\r\nHello World\r\n" | nc localhost 6379
+echo -e "get mykey\r\n" | nc localhost 6379
+
+# From Python
+import pymemcache
+client = pymemcache.Client(('localhost', 6379))
+client.set('mykey', 'Hello WorkingDB')
+value = client.get('mykey')
+print(value)  # b'Hello WorkingDB'
+```
+
+**🔧 Configuration**
+
+WorkingDB uses environment variables for configuration:
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `WORKINGDB_HOST` | Host to bind to | `127.0.0.1` |
+| `WORKINGDB_PORT` | Port to listen on | `6379` |
+| `WORKINGDB_DATA` | Data directory for persistence | `./data` |
+
+**📋 Supported Commands**
+
+**Redis Commands**
+- `GET key` - Get the value of a key
+- `SET key value [EX seconds]` - Set key to value with optional expiration
+- `DEL key` - Delete a key
+- `PING` - Test connection
+- `INFO` - Server information
+
+**Memcached Commands**
+- `get <key>` - Get the value of a key
+- `set <key> <flags> <exptime> <bytes> [noreply]` - Set key with optional expiration
+- `delete <key> [noreply]` - Delete a key
+- `stats` - Server statistics
+- `version` - Server version
+
+**🏗️ Architecture**
+
+WorkingDB is built with a modular Rust architecture:
 
 ```
-PROJECT: WORKINGDB KERNEL EVOLUTION - SILICON DOMINATION PATHWAY
+src/
+├── core/       - Core database state management
+├── storage/    - Memory and disk storage engines
+├── network/    - Network protocol implementations
+├── persistence/ - Durability and recovery
+├── query/      - SQL query parsing and execution
+└── util/       - Utility functions and helpers
 ```
 
-### 📡 WEEK 1 RECAP: MULTI-PROTOCOL BRAIN MATRIX [COMPLETE] 💻
+**🔐 Data Persistence**
 
-We MANIFESTED this reality with:
-- Lock-free B-tree memory substrate [ACHIEVED: 12K OPS/SEC]
-- Tokio async runtime with concurrent TCP handlers [ACHIEVED: 200+ CONNECTIONS]
-- Multi-protocol dominance (Redis+Memcached) [ACHIEVED: PROTOCOL AUTO-DETECTION]
-- Persistence with AOF journaling [ACHIEVED: CRASH-PROOF STORAGE]
-- Type-safe thread boundaries [ACHIEVED: MUTEX-PROTECTED INTERIOR MUTABILITY]
+WorkingDB uses an append-only file (AOF) for durability. All write operations are logged to the AOF and replayed on startup to recover the in-memory state. No data loss, even in the event of a crash.
 
-**PERFORMANCE METRICS: 72.5% OF REDIS THROUGHPUT WITH 7 DAYS OF DEV** 🔥
+**🧪 Development**
 
-### 🧠 WEEK 2: MEMORY SUBSTRATE ACCELERATION PROTOCOL 💉
+```bash
+# Run tests
+cargo test
 
-#### Core Execution Vectors:
-1. **Pointer Tagging & Traversal Optimization** 📊
-   - Implement compressed pointers with tag bits for metadata
-   - Drop epoch-based GC with zero-cost abstraction
-   - SIMD-vectorized key comparison with AVX-512 intrinsics
-   - EXPECTED GAIN: 50% READ OPS THROUGHPUT 🚀
+# Run with development features
+cargo run --features dev
+```
 
-2. **Zero-Copy Deserialization Pipeline** 💽
-   - Direct buffer mapping to protocol structures
-   - Eliminate heap allocation tax for command parsing
-   - Pre-allocate buffer pools with smart sizing
-   - EXPECTED GAIN: 40% LATENCY REDUCTION 💯
+**📈 Performance**
 
-3. **Thread Pool Neural Optimization** 🧵
-   - Work-stealing algorithm for thread load balancing
-   - CPU core pinning for cache locality
-   - Tokio runtime fine-tuning with tailored executor
-   - EXPECTED GAIN: 75% IMPROVED THREAD SCALING 🧬
+WorkingDB is designed for high throughput and low latency:
 
-#### Week 2 Deliverables:
-- Benchmark suite with load profiles for continuous optimization
-- Flame graph visualization for hotspot identification
-- Cache miss profiling for memory access patterns
-- Runtime metrics for memory/CPU/thread contention
+- Memory-optimized storage with sharded hash tables
+- Lock-free read paths for concurrent access
+- Tokio async runtime for non-blocking I/O
+- Zero-copy deserialization for network protocols
 
-### 🔥 WEEK 3: I/O ACCELERATION MATRIX 📡
+**🔮 Roadmap**
 
-#### Core Execution Vectors:
-1. **Kernel I/O Bypass Surgery** 💀
-   - io_uring implementation for syscall batching
-   - Direct NVMe access with O_DIRECT + polled I/O
-   - Batch persistence with optimized fsync patterns
-   - EXPECTED GAIN: 200% WRITE THROUGHPUT 💉
+- [ ] SQL query engine
+- [ ] Distributed clustering with Raft consensus
+- [ ] Advanced compression for values
+- [ ] RESP3 protocol support
+- [ ] io_uring-based disk I/O
+- [ ] Extended command set compatibility
 
-2. **Network Stack Optimization** 🌐
-   - SO_REUSEPORT for connection distribution
-   - TCP_NODELAY + TCP_QUICKACK flags for latency reduction
-   - Optional kernel bypass using DPDK for network acceleration
-   - EXPECTED GAIN: 60% NETWORK THROUGHPUT 🚀
+**🤝 Contributing**
 
-3. **Protocol Compression Architecture** 📦
-   - Adaptive protocol compression based on payload type
-   - Pipeline operation batching for command optimization
-   - Client-aware response sizing
-   - EXPECTED GAIN: 40% BANDWIDTH REDUCTION 💸
+Contributions are welcome! Please feel free to submit a Pull Request.
 
-#### Week 3 Deliverables:
-- I/O profiling toolkit for disk access patterns
-- Network traffic analyzer for protocol overhead measurement
-- Compression ratio metrics across different workloads
-- Kernel syscall profiling for system call reduction
+**📄 License**
 
-### ⚡ WEEK 4: DISTRIBUTED CLUSTER NEURAL NETWORK 🧪
-
-#### Core Execution Vectors:
-1. **NukeRaft Consensus Implementation** 🧬
-   - Leader election with optimized timeout model
-   - Log replication with batch commit optimization
-   - Snapshot management for quick node recovery
-   - EXPECTED GAIN: HORIZONTAL SCALABILITY 🌐
-
-2. **Distributed Memory Substrate** 🔮
-   - Consistent hashing for auto-sharding
-   - Vectorized replication with parallel log application
-   - Quorum-based read consistency options
-   - EXPECTED GAIN: LINEAR THROUGHPUT SCALING 📈
-
-3. **Multi-Node SQL Query Engine** 🔍
-   - Distributed query planning with cost-based optimization
-   - Parallel execution across node matrix
-   - Result stream merging with minimal memory overhead
-   - EXPECTED GAIN: COMPLEX QUERY CAPABILITY 🧠
-
-#### Week 4 Deliverables:
-- Multi-node benchmark suite for cluster testing
-- Failure injection toolkit for resilience testing
-- Network partition simulator for consensus validation
-- SQL query performance profiler across distributed substrate
-
-## 💻 NEURAL SUBSTRATE EVOLUTION PATHWAY 💻
-
-This FOUR-WEEK EXECUTION VECTOR will take your already BRAIN-MELTING database performance and INJECT IT WITH COMPUTATIONAL STEROIDS! 💪💉 We're talking about OBLITERATING CONVENTIONAL DATABASE PARADIGMS with a CUSTOM NEURAL SUBSTRATE that:
-
-1. OPERATES AT SILICON PHYSICS LIMITS
-2. SCALES HORIZONTALLY ACROSS COMPUTATIONAL NODES
-3. SPEAKS MULTIPLE PROTOCOL LANGUAGES SIMULTANEOUSLY
-4. GUARANTEES DATA INTEGRITY WITH MATHEMATICAL PRECISION
-
-By week 4, your WORKINGDB will have TRANSCENDED the mere comparison with Redis to become a FULL COMPUTATIONAL ECOSYSTEM capable of DISTRIBUTED NEURAL PROCESSING at WARP SPEED! 🔥⚡🚀
-
-You ready to INJECT THIS NEURAL STACK INTO SILICON and WATCH REALITY BEND AROUND YOUR DATABASE SUBSTRATE? 🧬💀🔥
+WorkingDB is licensed under the MIT License - see the LICENSE file for details.

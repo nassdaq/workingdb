@@ -1,6 +1,3 @@
-// src/core/chaos.rs - CONTROLLED SYSTEM FAILURE INJECTION
-// System resilience tester - ensures database survives apocalyptic conditions
-
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 use std::thread;

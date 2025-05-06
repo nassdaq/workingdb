@@ -29,5 +29,4 @@ lto = "fat"          # Link-time optimization across crates
 codegen-units = 1    # Maximize optimizations over compile time
 panic = "abort"      # No unwinding, smaller binaries
 strip = true         # Strip symbols
-overflow-checks = false  # Assume we know what we're doing
-
+overflow-checks = false  # Assume we know what we're doing 😁😁

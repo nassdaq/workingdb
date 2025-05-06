@@ -1,7 +1,3 @@
-// src/lib.rs - CORE WORKINGDB PRIMITIVES
-// Core database engine exports and feature flags
-
-// SYSTEM RUNTIME FLAGS - FEATURE ACTIVATION
 #![feature(box_patterns)]      // Enable box pattern matching
 #![allow(unused_variables)]    // Silence warnings during development
 #![allow(dead_code)]           // Silence warnings during development
@@ -20,10 +16,6 @@ pub use storage::memory::MemTable;
 pub use persistence::aof::AppendOnlyFile;
 pub use network::tcp::TcpServer;
 
-/// WorkingDB - High-performance database engine
-/// 
-/// WorkingDB is a multi-protocol database engine designed for extreme performance,
-/// resilience, and compatibility with existing ecosystems.
 pub struct WorkingDB {
     // Global state reference
     state: std::sync::Arc<GlobalState>,
@@ -61,7 +53,7 @@ impl Default for Config {
     fn default() -> Self {
         Self {
             host: "127.0.0.1".to_string(),
-            port: 6379,
+            port: 7777,
             data_path: std::path::PathBuf::from("./data"),
             memory_limit: 0,
             persistence_enabled: true,
